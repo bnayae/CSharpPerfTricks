@@ -14,14 +14,27 @@ namespace Bnaya.Samples
         private const int LIGHT_ITERATIONS = 4;
         static void Main()
         {
-            Console.WriteLine("============ SUMMARY ==============");
+            //CheckNoErrors();
+
             //var summary = BenchmarkRunner.Run<DynamicCreationBenchmark>();
-            var summary = BenchmarkRunner.Run<ArrayBenchmark>();
+            //var summary = BenchmarkRunner.Run<ArrayBenchmark>();
+            var summary = BenchmarkRunner.Run<SpanBenchmark>();
+            Console.WriteLine("============ SUMMARY ==============");
             Console.WriteLine(summary);
 
             Console.ReadLine();
         }
-       
- 
-  }
+
+        private static void CheckNoErrors()
+        {
+            var s = new SpanBenchmark();
+            s.Setup();
+            s.WithArray();
+            s.WithCopyClrToNativePointer();
+            //s.WithCopyClrToStackPointer();
+            s.WithPointer();
+            s.WithSpan();
+        }
+
+    }
 }

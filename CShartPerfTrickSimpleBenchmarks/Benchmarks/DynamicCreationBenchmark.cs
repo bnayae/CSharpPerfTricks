@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -28,18 +29,52 @@ using BenchmarkDotNet.Jobs;
 
 namespace Bnaya.Samples
 {
-    //[DryClrJob]
-    [ShortRunJob]
-    //[ClrJob, CoreJob]
-    [MeanColumn, RankColumn]
-    [RPlotExporter, RankColumn]
-    //[LegacyJitX64Job] //, RyuJitX64Job]
-    [MemoryDiagnoser]
-    //[InliningDiagnoser]
-    //[Config(typeof(Config))]
-    //[Config(typeof(FastAndDirtyConfig))]
-    public class DynamicCreationBenchmark
+
+    public class DynamicCreationBenchmark:  IBenchmark
     {
+        private const int LIGHT_ITERATIONS = 4;
+
+        #region Run
+
+        public void Run()
+        {
+            Setup();
+            var sw = new Stopwatch();
+            for (int i = 0; i < LIGHT_ITERATIONS; i++)
+            {
+                sw.Restart();
+                Compiled();
+                sw.Stop();
+                Console.WriteLine($"Compiled =              {sw.ElapsedMilliseconds.ToString("N0").PadLeft(10)}");
+
+                sw.Restart();
+                Reflection();
+                sw.Stop();
+                Console.WriteLine($"Reflection =            {sw.ElapsedMilliseconds.ToString("N0").PadLeft(10)}");
+
+                sw.Restart();
+                ReflectionGeneric();
+                sw.Stop();
+                Console.WriteLine($"Reflection Generic =    {sw.ElapsedMilliseconds.ToString("N0").PadLeft(10)}");
+
+                sw.Restart();
+                DynamicColdFactory();
+                sw.Stop();
+                Console.WriteLine($"Dynamic Cold Factory =  {sw.ElapsedMilliseconds.ToString("N0").PadLeft(10)}  [SecurityTransparent]");
+
+                sw.Restart();
+                DynamicHotFactory();
+                sw.Stop();
+                Console.WriteLine($"Dynamic Hot Factory =   {sw.ElapsedMilliseconds.ToString("N0").PadLeft(10)}  [SecurityTransparent]");
+
+                Console.WriteLine();
+                Console.WriteLine("---------------------------------------------------");
+                Console.WriteLine();
+            }
+        }
+
+        #endregion // Run
+
         #region Config
 
         private class Config : ManualConfig
